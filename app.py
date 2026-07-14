@@ -281,4 +281,7 @@ def checkin():
 
 # ── Entry point ────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    # Use PORT env variable if set (Render.com injects this automatically),
+    # otherwise fall back to 5001 for local development.
+    port = int(os.environ.get("PORT", 5001))
+    app.run(debug=False, host="0.0.0.0", port=port)
