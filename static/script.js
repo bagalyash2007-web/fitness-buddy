@@ -68,20 +68,24 @@ document.addEventListener("DOMContentLoaded", () => {
   // Show a personalised welcome message in the chat feed if we have a profile
   // USER_PROFILE is injected by Flask/Jinja2 into the page as a JS variable
   if (typeof USER_PROFILE !== "undefined" && USER_PROFILE) {
-    const p = USER_PROFILE;
+    const p    = USER_PROFILE;
     const name = p.name || "there";
-    const goal = p.goal ? ` Your goal is to <strong>${p.goal}</strong>.` : "";
+    const goal = p.goal ? ` Your goal is to <b>${p.goal}</b>.` : "";
     const bmi  = (p.height && p.weight)
       ? (() => {
           const b = (parseFloat(p.weight) / Math.pow(parseFloat(p.height) / 100, 2)).toFixed(1);
-          return ` Your BMI is <strong>${b}</strong>.`;
+          return ` Your BMI is <b>${b}</b>.`;
         })()
       : "";
-    const diet = p.diet && p.diet !== "No preference" ? ` I'll keep your <strong>${p.diet}</strong> diet in mind for all meal suggestions.` : "";
-    appendMessage(
+    const diet = p.diet && p.diet !== "No preference"
+      ? ` I'll keep your <b>${p.diet}</b> diet in mind for all meal suggestions.`
+      : "";
+
+    // appendMessageHTML bypasses the text escaper so <b> tags render properly
+    appendMessageHTML(
       "assistant",
-      `Hey ${name}! 👋 I'm **Fitness Buddy**, your personal AI coach.${goal}${bmi}${diet}\n\nI've loaded your profile and every recommendation I give will be tailored specifically for you. What would you like help with today?`,
-      false  // skip hero-banner-hide so it stays until user types
+      `Hey ${name}! 👋 I'm <b>Fitness Buddy</b>, your personal AI coach.${goal}${bmi}${diet}<br/><br/>I've loaded your profile — every recommendation will be tailored specifically for you. What would you like help with today?`,
+      false
     );
   }
 });
@@ -159,6 +163,37 @@ function appendMessage(role, text, hideHero = true) {
   msgWrapper.appendChild(bubble);
   msgWrapper.appendChild(time);
 
+  row.appendChild(avatar);
+  row.appendChild(msgWrapper);
+  messagesEl.appendChild(row);
+  scrollToBottom();
+}
+
+// ── appendMessageHTML — for pre-built HTML content (welcome message) ─────────
+// Same as appendMessage but sets innerHTML directly instead of going through
+// the text escaper. Only use this for trusted, internally-built strings.
+function appendMessageHTML(role, html, hideHero = true) {
+  if (hideHero && heroBanner && heroBanner.style.display !== "none") {
+    heroBanner.style.display = "none";
+  }
+  const row = document.createElement("div");
+  row.classList.add("msg-row", role);
+
+  const avatar = document.createElement("div");
+  avatar.classList.add("msg-avatar", role === "assistant" ? "ai-avatar" : "user-avatar");
+  avatar.innerHTML = `<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M12 2a5 5 0 110 10A5 5 0 0112 2zM4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>`;
+
+  const msgWrapper = document.createElement("div");
+  const bubble = document.createElement("div");
+  bubble.classList.add("msg-bubble");
+  bubble.innerHTML = html;          // trusted HTML — no escaping needed
+
+  const time = document.createElement("div");
+  time.classList.add("msg-time");
+  time.textContent = getTime();
+
+  msgWrapper.appendChild(bubble);
+  msgWrapper.appendChild(time);
   row.appendChild(avatar);
   row.appendChild(msgWrapper);
   messagesEl.appendChild(row);
