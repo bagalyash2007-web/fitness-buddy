@@ -13,9 +13,10 @@ from datetime import date, timedelta
 from flask import Flask, request, jsonify, render_template, redirect, url_for
 from flask_cors import CORS
 from dotenv import load_dotenv
-# ibm-watson-machine-learning is the Python 3.9-compatible SDK for watsonx.ai
-from ibm_watson_machine_learning.foundation_models import Model
-from ibm_watson_machine_learning.metanames import GenTextParamsMetaNames as GenParams
+# ibm-watsonx-ai is the modern SDK (Python >=3.11, used on Render.com)
+from ibm_watsonx_ai import APIClient, Credentials
+from ibm_watsonx_ai.foundation_models import ModelInference
+from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
 
 # ── Load environment variables from .env file ──────────────────────────────────
 load_dotenv()
@@ -104,29 +105,28 @@ When giving calorie or nutrition targets, base them on their age, sex, weight, a
 # ── watsonx.ai client initialisation ──────────────────────────────────────────
 def get_model():
     """
-    Initialise and return a watsonx.ai Model instance using ibm-watson-machine-learning.
+    Initialise and return a watsonx.ai ModelInference instance using ibm-watsonx-ai.
     Credentials are read from environment variables:
       - WATSONX_APIKEY      : IBM Cloud API key
       - WATSONX_URL         : watsonx.ai service URL (e.g. https://us-south.ml.cloud.ibm.com)
       - WATSONX_PROJECT_ID  : Your watsonx.ai project ID
     """
-    credentials = {
-        "url":    os.getenv("WATSONX_URL"),
-        "apikey": os.getenv("WATSONX_APIKEY"),
-    }
+    credentials = Credentials(
+        url=os.getenv("WATSONX_URL"),
+        api_key=os.getenv("WATSONX_APIKEY"),
+    )
+    client = APIClient(credentials=credentials)
 
-    params = {
-        GenParams.MAX_NEW_TOKENS: 512,
-        GenParams.TEMPERATURE: 0.7,
-        GenParams.TOP_P: 0.9,
-        GenParams.REPETITION_PENALTY: 1.1,
-    }
-
-    model = Model(
+    model = ModelInference(
         model_id=MODEL_ID,
-        params=params,
-        credentials=credentials,
+        api_client=client,
         project_id=os.getenv("WATSONX_PROJECT_ID"),
+        params={
+            GenParams.MAX_NEW_TOKENS: 512,
+            GenParams.TEMPERATURE: 0.7,
+            GenParams.TOP_P: 0.9,
+            GenParams.REPETITION_PENALTY: 1.1,
+        },
     )
     return model
 

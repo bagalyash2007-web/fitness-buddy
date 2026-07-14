@@ -1,11 +1,12 @@
 # requirements.txt — Fitness Buddy Python dependencies
 # -------------------------------------------------------
 # Install all dependencies with:  pip install -r requirements.txt
-# Note: ibm-watson-machine-learning is used for Python 3.9 compatibility.
-# If you are on Python >=3.11, you can replace it with: ibm-watsonx-ai>=1.1.2
+#
+# Render.com uses Python 3.11 — we use ibm-watsonx-ai (requires Python >=3.11).
+# For local Python 3.9, use ibm-watson-machine-learning>=1.0.300 instead.
 
 flask>=3.0.0
 flask-cors>=4.0.0
 python-dotenv>=1.0.0
-ibm-watson-machine-learning>=1.0.300
+ibm-watsonx-ai>=1.1.2
 gunicorn>=21.2.0

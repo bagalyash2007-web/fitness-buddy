@@ -1,16 +1,15 @@
 # render.yaml — Render.com deployment configuration
 # ---------------------------------------------------
-# Render reads this file to automatically configure the web service.
-
 services:
   - type: web
     name: fitness-buddy
     runtime: python
+    pythonVersion: "3.11.9"
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
       - key: WATSONX_APIKEY
-        sync: false          # You will set this manually in the Render dashboard
+        sync: false
       - key: WATSONX_URL
         sync: false
       - key: WATSONX_PROJECT_ID
