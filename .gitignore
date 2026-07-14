@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Virtual environment — never commit this
+venv/
+env/
+.venv/
+
+# Environment variables — NEVER commit real credentials
+.env
+
+# Runtime data files — personal, not needed in repo
+habit_data.json
+profile.json
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp

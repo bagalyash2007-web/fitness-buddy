@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<!--
+  onboarding.html — Fitness Buddy Profile Setup Wizard
+  ------------------------------------------------------
+  Multi-step onboarding form (inspired by MyFitnessPal).
+  Collects: name, goal, sex, DOB, height, weight, activity level, diet pref.
+  Submits to POST /onboarding which saves profile.json and redirects to /.
+  No login required — single-user MVP.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fitness Buddy — Get Started</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body class="ob-body">
+
+<div class="ob-shell">
+
+  <!-- Progress bar at top -->
+  <div class="ob-progress-bar">
+    <div class="ob-progress-fill" id="ob-fill"></div>
+  </div>
+
+  <!-- Step container — only one .ob-step is visible at a time -->
+  <div class="ob-card">
+
+    <!-- ── Step 1: Welcome ──────────────────────────────────── -->
+    <div class="ob-step active" id="step-1">
+      <div class="ob-welcome-icon">💪</div>
+      <h1 class="ob-welcome-title">Welcome to<br/><span class="ob-blue">Fitness Buddy</span></h1>
+      <p class="ob-welcome-sub">Your personal AI coach for workouts, diet &amp; healthy habits. Let's build your profile so every recommendation is made just for you.</p>
+      <div class="ob-feature-grid">
+        <div class="ob-feat"><span>🏋️</span><span>Personalised Workouts</span></div>
+        <div class="ob-feat"><span>🥗</span><span>Custom Meal Plans</span></div>
+        <div class="ob-feat"><span>🔥</span><span>Habit Tracking</span></div>
+        <div class="ob-feat"><span>🧠</span><span>Mindset Coaching</span></div>
+      </div>
+      <button class="ob-btn-primary" onclick="nextStep()">GET STARTED</button>
+    </div>
+
+    <!-- ── Step 2: First name ────────────────────────────────── -->
+    <div class="ob-step" id="step-2">
+      <h2 class="ob-q">What's your first name?</h2>
+      <p class="ob-sub">We're happy you're here. Let's get to know you a little.</p>
+      <input class="ob-input" id="inp-name" type="text" placeholder="First Name" maxlength="40" autocomplete="given-name"/>
+      <p class="ob-error" id="err-name"></p>
+      <div class="ob-nav">
+        <button class="ob-btn-back" onclick="prevStep()">BACK</button>
+        <button class="ob-btn-primary" onclick="nextStep()">NEXT</button>
+      </div>
+    </div>
+
+    <!-- ── Step 3: Primary goal ──────────────────────────────── -->
+    <div class="ob-step" id="step-3">
+      <h2 class="ob-q" id="goal-heading">Now for your goals.</h2>
+      <p class="ob-sub">Select your primary fitness goal.</p>
+      <div class="ob-choice-list" id="goal-list">
+        <button class="ob-choice" data-val="Lose weight"       onclick="selectChoice(this,'goal-list')">Lose weight</button>
+        <button class="ob-choice" data-val="Maintain weight"   onclick="selectChoice(this,'goal-list')">Maintain weight</button>
+        <button class="ob-choice" data-val="Gain weight"       onclick="selectChoice(this,'goal-list')">Gain weight</button>
+        <button class="ob-choice" data-val="Build muscle"      onclick="selectChoice(this,'goal-list')">Build muscle</button>
+        <button class="ob-choice" data-val="Improve fitness"   onclick="selectChoice(this,'goal-list')">Improve fitness &amp; endurance</button>
+        <button class="ob-choice" data-val="Manage stress"     onclick="selectChoice(this,'goal-list')">Manage stress &amp; wellbeing</button>
+      </div>
+      <p class="ob-error" id="err-goal"></p>
+      <div class="ob-nav">
+        <button class="ob-btn-back" onclick="prevStep()">BACK</button>
+        <button class="ob-btn-primary" onclick="nextStep()">NEXT</button>
+      </div>
+    </div>
+
+    <!-- ── Step 4: Sex ───────────────────────────────────────── -->
+    <div class="ob-step" id="step-4">
+      <h2 class="ob-q">What's your biological sex?</h2>
+      <p class="ob-sub">Used to estimate your calorie and nutrition needs.</p>
+      <div class="ob-choice-list" id="sex-list">
+        <button class="ob-choice" data-val="Male"   onclick="selectChoice(this,'sex-list')">Male</button>
+        <button class="ob-choice" data-val="Female" onclick="selectChoice(this,'sex-list')">Female</button>
+        <button class="ob-choice" data-val="Other"  onclick="selectChoice(this,'sex-list')">Prefer not to say</button>
+      </div>
+      <p class="ob-error" id="err-sex"></p>
+      <div class="ob-nav">
+        <button class="ob-btn-back" onclick="prevStep()">BACK</button>
+        <button class="ob-btn-primary" onclick="nextStep()">NEXT</button>
+      </div>
+    </div>
+
+    <!-- ── Step 5: Age ───────────────────────────────────────── -->
+    <div class="ob-step" id="step-5">
+      <h2 class="ob-q">How old are you?</h2>
+      <p class="ob-sub">Age helps calibrate your workout and nutrition advice.</p>
+      <div class="ob-input-row">
+        <input class="ob-input ob-input-sm" id="inp-age" type="number" placeholder="Age" min="10" max="100"/>
+        <span class="ob-unit">years</span>
+      </div>
+      <p class="ob-error" id="err-age"></p>
+      <div class="ob-nav">
+        <button class="ob-btn-back" onclick="prevStep()">BACK</button>
+        <button class="ob-btn-primary" onclick="nextStep()">NEXT</button>
+      </div>
+    </div>
+
+    <!-- ── Step 6: Height & Weight ───────────────────────────── -->
+    <div class="ob-step" id="step-6">
+      <h2 class="ob-q">Your height &amp; weight</h2>
+      <p class="ob-sub">Used to calculate your BMI and personalise targets.</p>
+
+      <label class="ob-label">Height</label>
+      <div class="ob-input-row">
+        <input class="ob-input ob-input-sm" id="inp-height" type="number" placeholder="Height" min="100" max="250"/>
+        <span class="ob-unit">cm</span>
+      </div>
+
+      <label class="ob-label" style="margin-top:16px">Current Weight</label>
+      <div class="ob-input-row">
+        <input class="ob-input ob-input-sm" id="inp-weight" type="number" placeholder="Current weight" min="30" max="300"/>
+        <span class="ob-unit">kg</span>
+      </div>
+
+      <label class="ob-label" style="margin-top:16px">Goal Weight</label>
+      <div class="ob-input-row">
+        <input class="ob-input ob-input-sm" id="inp-goal-weight" type="number" placeholder="Goal weight" min="30" max="300"/>
+        <span class="ob-unit">kg</span>
+      </div>
+      <p class="ob-error" id="err-body"></p>
+      <div class="ob-nav">
+        <button class="ob-btn-back" onclick="prevStep()">BACK</button>
+        <button class="ob-btn-primary" onclick="nextStep()">NEXT</button>
+      </div>
+    </div>
+
+    <!-- ── Step 7: Activity level ────────────────────────────── -->
+    <div class="ob-step" id="step-7">
+      <h2 class="ob-q">What is your activity level?</h2>
+      <p class="ob-sub">Not including dedicated workouts — your general daily movement.</p>
+      <div class="ob-choice-list" id="activity-list">
+        <button class="ob-choice ob-choice-desc" data-val="Sedentary" onclick="selectChoice(this,'activity-list')">
+          <strong>Sedentary</strong>
+          <small>Mostly sitting — desk job, little movement</small>
+        </button>
+        <button class="ob-choice ob-choice-desc" data-val="Lightly active" onclick="selectChoice(this,'activity-list')">
+          <strong>Lightly Active</strong>
+          <small>Some walking — teacher, retail, light housework</small>
+        </button>
+        <button class="ob-choice ob-choice-desc" data-val="Moderately active" onclick="selectChoice(this,'activity-list')">
+          <strong>Moderately Active</strong>
+          <small>On your feet often — food service, active commute</small>
+        </button>
+        <button class="ob-choice ob-choice-desc" data-val="Very active" onclick="selectChoice(this,'activity-list')">
+          <strong>Very Active</strong>
+          <small>Heavy physical work all day — construction, sports coach</small>
+        </button>
+      </div>
+      <p class="ob-error" id="err-activity"></p>
+      <div class="ob-nav">
+        <button class="ob-btn-back" onclick="prevStep()">BACK</button>
+        <button class="ob-btn-primary" onclick="nextStep()">NEXT</button>
+      </div>
+    </div>
+
+    <!-- ── Step 8: Diet preference ───────────────────────────── -->
+    <div class="ob-step" id="step-8">
+      <h2 class="ob-q">Any dietary preferences?</h2>
+      <p class="ob-sub">This helps us suggest the right meal ideas for you.</p>
+      <div class="ob-choice-list" id="diet-list">
+        <button class="ob-choice" data-val="Vegetarian"     onclick="selectChoice(this,'diet-list')">🥦 Vegetarian</button>
+        <button class="ob-choice" data-val="Non-vegetarian" onclick="selectChoice(this,'diet-list')">🍗 Non-vegetarian</button>
+        <button class="ob-choice" data-val="Vegan"          onclick="selectChoice(this,'diet-list')">🌱 Vegan</button>
+        <button class="ob-choice" data-val="No preference"  onclick="selectChoice(this,'diet-list')">🍽️ No preference</button>
+      </div>
+      <p class="ob-error" id="err-diet"></p>
+      <div class="ob-nav">
+        <button class="ob-btn-back" onclick="prevStep()">BACK</button>
+        <button class="ob-btn-primary" onclick="nextStep()">NEXT</button>
+      </div>
+    </div>
+
+    <!-- ── Step 9: All done ──────────────────────────────────── -->
+    <div class="ob-step" id="step-9">
+      <div class="ob-done-icon">🎉</div>
+      <h2 class="ob-q" id="done-heading">You're all set!</h2>
+      <p class="ob-sub" id="done-sub">Your personalised fitness plan is ready. Fitness Buddy will give you advice tailored exactly to your goals and body.</p>
+      <div class="ob-summary" id="ob-summary"></div>
+      <button class="ob-btn-primary" id="submit-btn" onclick="submitProfile()">START MY JOURNEY →</button>
+    </div>
+
+  </div><!-- /.ob-card -->
+
+  <p class="ob-footer">Fitness Buddy gives general wellness advice — always consult a doctor for medical concerns.</p>
+</div>
+
+<script>
+/*
+  Onboarding wizard JS
+  ---------------------
+  Manages multi-step navigation, validation, and final form submission
+  to POST /onboarding which saves the user profile.
+*/
+
+// ── State ─────────────────────────────────────────────────────────────────────
+const TOTAL_STEPS = 9;
+let currentStep   = 1;
+
+// Collected profile values
+const profile = {
+  name:        "",
+  goal:        "",
+  sex:         "",
+  age:         "",
+  height:      "",
+  weight:      "",
+  goal_weight: "",
+  activity:    "",
+  diet:        "",
+};
+
+// ── Step navigation ───────────────────────────────────────────────────────────
+function showStep(n) {
+  document.querySelectorAll(".ob-step").forEach(s => s.classList.remove("active"));
+  document.getElementById("step-" + n).classList.add("active");
+  // Update progress bar (step 1 is welcome = 0%, step 9 = 100%)
+  const pct = Math.round(((n - 1) / (TOTAL_STEPS - 1)) * 100);
+  document.getElementById("ob-fill").style.width = pct + "%";
+  currentStep = n;
+}
+
+function nextStep() {
+  if (!validate(currentStep)) return;
+  collect(currentStep);
+  if (currentStep === TOTAL_STEPS - 1) buildSummary();
+  if (currentStep < TOTAL_STEPS) showStep(currentStep + 1);
+}
+
+function prevStep() {
+  if (currentStep > 1) showStep(currentStep - 1);
+}
+
+// ── Per-step validation ───────────────────────────────────────────────────────
+function validate(step) {
+  clearErrors();
+  if (step === 2) {
+    if (!document.getElementById("inp-name").value.trim()) {
+      return showError("err-name", "Please enter your first name.");
+    }
+  }
+  if (step === 3 && !getSelected("goal-list"))  return showError("err-goal", "Please select a goal.");
+  if (step === 4 && !getSelected("sex-list"))   return showError("err-sex",  "Please make a selection.");
+  if (step === 5) {
+    const a = parseInt(document.getElementById("inp-age").value);
+    if (!a || a < 10 || a > 100) return showError("err-age", "Please enter a valid age (10–100).");
+  }
+  if (step === 6) {
+    const h = parseFloat(document.getElementById("inp-height").value);
+    const w = parseFloat(document.getElementById("inp-weight").value);
+    const g = parseFloat(document.getElementById("inp-goal-weight").value);
+    if (!h || h < 100 || h > 250) return showError("err-body", "Please enter a valid height (100–250 cm).");
+    if (!w || w < 30  || w > 300) return showError("err-body", "Please enter a valid current weight (30–300 kg).");
+    if (!g || g < 30  || g > 300) return showError("err-body", "Please enter a valid goal weight (30–300 kg).");
+  }
+  if (step === 7 && !getSelected("activity-list")) return showError("err-activity", "Please select your activity level.");
+  if (step === 8 && !getSelected("diet-list"))     return showError("err-diet",     "Please select a diet preference.");
+  return true;
+}
+
+// ── Collect each step's value into profile ────────────────────────────────────
+function collect(step) {
+  if (step === 2) profile.name        = document.getElementById("inp-name").value.trim();
+  if (step === 3) profile.goal        = getSelected("goal-list");
+  if (step === 4) profile.sex         = getSelected("sex-list");
+  if (step === 5) profile.age         = document.getElementById("inp-age").value;
+  if (step === 6) {
+    profile.height      = document.getElementById("inp-height").value;
+    profile.weight      = document.getElementById("inp-weight").value;
+    profile.goal_weight = document.getElementById("inp-goal-weight").value;
+  }
+  if (step === 7) profile.activity    = getSelected("activity-list");
+  if (step === 8) profile.diet        = getSelected("diet-list");
+
+  // Update the goal heading with the user's name once we have it
+  if (step === 2 && profile.name) {
+    document.getElementById("goal-heading").textContent = `Thanks ${profile.name}! Now for your goals.`;
+    document.getElementById("done-heading").textContent = `You're all set, ${profile.name}! 🎉`;
+  }
+}
+
+// ── Build summary card on step 9 ─────────────────────────────────────────────
+function buildSummary() {
+  const bmi = profile.height && profile.weight
+    ? (parseFloat(profile.weight) / Math.pow(parseFloat(profile.height) / 100, 2)).toFixed(1)
+    : "–";
+  const rows = [
+    ["🎯 Goal",     profile.goal],
+    ["📏 Height",   profile.height + " cm"],
+    ["⚖️ Weight",   profile.weight + " kg → " + profile.goal_weight + " kg"],
+    ["🔢 BMI",      bmi],
+    ["⚡ Activity", profile.activity],
+    ["🥗 Diet",     profile.diet],
+  ];
+  document.getElementById("ob-summary").innerHTML = rows
+    .map(r => `<div class="ob-sum-row"><span class="ob-sum-lbl">${r[0]}</span><span class="ob-sum-val">${r[1]}</span></div>`)
+    .join("");
+}
+
+// ── Submit profile to backend ─────────────────────────────────────────────────
+async function submitProfile() {
+  collect(8); // ensure last step collected
+  const btn = document.getElementById("submit-btn");
+  btn.textContent = "Saving…";
+  btn.disabled = true;
+
+  try {
+    const res = await fetch("/onboarding", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify(profile),
+    });
+    if (res.ok) {
+      window.location.href = "/";
+    } else {
+      btn.textContent = "Error — try again";
+      btn.disabled = false;
+    }
+  } catch (e) {
+    btn.textContent = "Error — try again";
+    btn.disabled = false;
+  }
+}
+
+// ── Choice button selection ───────────────────────────────────────────────────
+function selectChoice(btn, listId) {
+  document.querySelectorAll(`#${listId} .ob-choice`).forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+}
+
+function getSelected(listId) {
+  const sel = document.querySelector(`#${listId} .ob-choice.selected`);
+  return sel ? sel.dataset.val : "";
+}
+
+// ── Error helpers ─────────────────────────────────────────────────────────────
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = msg;
+  return false;
+}
+function clearErrors() {
+  document.querySelectorAll(".ob-error").forEach(e => e.textContent = "");
+}
+</script>
+
+</body>
+</html>
